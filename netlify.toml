@@ -1,14 +1,9 @@
 [build]
+  command = "bash build.sh"
   publish = "."
 
 [[headers]]
-  for = "/index.html"
+  for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self' 'unsafe-inline' fonts.googleapis.com fonts.gstatic.com; connect-src 'self' https://api.anthropic.com; img-src 'self' data:"
     X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
-
-# Edge function to inject API key from env into the page
-[[edge_functions]]
-  path = "/index.html"
-  function = "inject-key"

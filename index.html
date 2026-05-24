@@ -5,418 +5,145 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EDGE — Minutes of Meeting Generator</title>
 <style>
-/*
-  EDGE BRAND IDENTITY
-  ─────────────────────────────────────
-  Black     #000000   30%  — header, text, strong UI
-  Off-white #FAF9F6   50%  — page background, cards
-  Grey      #D3D3D3   15%  — borders, dividers, muted
-  Yellow    #FFD033    5%  — accent only: CTAs, highlights, status
-  Font      Helvetica Neue (system stack)
-  ─────────────────────────────────────
-*/
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
-  --black:   #000000;
-  --white:   #FAF9F6;
-  --grey:    #D3D3D3;
-  --yellow:  #FFD033;
-  --ink:     #1A1A1A;
-  --muted:   #6B6B6B;
-  --faint:   #EBEBEB;
-  --danger:  #C0392B;
-  --warn:    #B07000;
-  --ok:      #1A6B2A;
-  --r:       4px;
+  --black:#000000; --white:#FAF9F6; --grey:#D3D3D3; --yellow:#FFD033;
+  --ink:#1A1A1A; --muted:#6B6B6B; --faint:#EBEBEB;
+  --danger:#C0392B; --ok:#1A6B2A; --r:4px;
 }
-
-body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  background: var(--white);
-  color: var(--ink);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  font-size: 13px;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ─── HEADER ─── */
-.app-header {
-  background: var(--black);
-  height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem;
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 3px solid var(--yellow);
-}
-.header-left  { display: flex; align-items: center; gap: 16px; }
-.edge-logo    { height: 28px; width: auto; filter: brightness(0) invert(1); }
-.h-divider    { width: 1px; height: 20px; background: #333; }
-.h-title      { color: #888; font-size: 11px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; }
-.h-badge      { background: #111; border: 1px solid #333; color: #666; font-size: 10px; padding: 3px 10px; border-radius: 2px; letter-spacing: 1px; font-weight: 500; }
-.status-dot   { width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; }
-
-/* ─── LAYOUT ─── */
-.app-body { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 54px); }
-
-/* ─── SIDEBAR ─── */
-.sidebar {
-  width: 296px;
-  flex-shrink: 0;
-  background: var(--white);
-  border-right: 1px solid var(--grey);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-.sidebar::-webkit-scrollbar { width: 3px; }
-.sidebar::-webkit-scrollbar-thumb { background: var(--grey); }
-
-.sb-sec   { padding: 1rem; border-bottom: 1px solid var(--faint); }
-.sb-hdr   { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.sb-step  {
-  width: 18px; height: 18px; border-radius: 2px;
-  background: var(--black); color: var(--white);
-  font-size: 10px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.sb-title { font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
-
-/* Form */
-.lbl {
-  display: block; font-size: 9px; font-weight: 700;
-  color: var(--muted); text-transform: uppercase;
-  letter-spacing: 1px; margin: 8px 0 3px;
-}
-.lbl:first-of-type { margin-top: 0; }
-
-input[type=text], input[type=date], input[type=time],
-input[type=password], select, textarea {
-  width: 100%;
-  border: 1px solid var(--grey);
-  border-radius: var(--r);
-  padding: 7px 9px;
-  font-size: 12px;
-  font-family: inherit;
-  color: var(--ink);
-  background: #fff;
-  transition: border-color 0.15s;
-  appearance: auto;
-}
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--black);
-  box-shadow: 0 0 0 2px rgba(0,0,0,0.06);
-}
-.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-textarea { height: 138px; resize: vertical; line-height: 1.5; font-size: 12px; }
-.char-info { font-size: 9px; color: var(--muted); text-align: right; margin-top: 3px; }
-
-/* Chips */
-.chips { display: flex; flex-wrap: wrap; gap: 5px; }
-.chip {
-  padding: 4px 10px; border-radius: 2px;
-  border: 1px solid var(--grey);
-  font-size: 11px; font-weight: 600;
-  cursor: pointer; background: #fff; color: var(--muted);
-  user-select: none; transition: all 0.12s; letter-spacing: 0.2px;
-}
-.chip.on { background: var(--black); border-color: var(--black); color: var(--white); }
-.chip:hover:not(.on) { border-color: var(--black); color: var(--black); }
-
-/* Toggles */
-.tog-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 7px 0; border-bottom: 1px solid var(--faint);
-}
-.tog-row:last-child { border-bottom: none; }
-.tl { font-size: 12px; font-weight: 600; color: var(--ink); }
-.ts { font-size: 10px; color: var(--muted); margin-top: 1px; }
-.tog-sw {
-  width: 36px; height: 20px; border-radius: 20px;
-  cursor: pointer; position: relative; flex-shrink: 0;
-  transition: background 0.2s;
-}
-.tog-th {
-  position: absolute; top: 2px; left: 2px;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: #fff; transition: left 0.2s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
-}
-
-/* API section */
-.api-notice {
-  background: #FFFBEE; border: 1px solid #EDD800;
-  border-radius: var(--r); padding: 9px 11px; margin-bottom: 8px;
-}
-.an-title { font-size: 10px; font-weight: 700; color: #7A6000; margin-bottom: 2px; }
-.an-body  { font-size: 10px; color: #7A6000; line-height: 1.5; }
-.an-body a { color: var(--black); font-weight: 700; }
-
-/* Generate button */
-.btn-gen {
-  margin: 1rem;
-  width: calc(100% - 2rem);
-  background: var(--yellow);
-  color: var(--black);
-  border: none;
-  border-radius: var(--r);
-  padding: 11px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: background 0.12s, transform 0.08s;
-}
-.btn-gen:hover:not(:disabled) { background: #E8BC00; }
-.btn-gen:active:not(:disabled) { transform: scale(0.98); }
-.btn-gen:disabled { background: var(--grey); color: var(--muted); cursor: not-allowed; }
-
-/* ─── RIGHT PANEL ─── */
-.panel-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-.toolbar {
-  background: var(--white);
-  border-bottom: 1px solid var(--grey);
-  padding: 0.55rem 1.5rem;
-  display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0;
-}
-.tl-left  { display: flex; align-items: center; gap: 10px; }
-.s-pill   { font-size: 9px; font-weight: 700; padding: 3px 9px; border-radius: 2px; letter-spacing: 1px; text-transform: uppercase; }
-.sp-idle  { background: var(--faint); color: var(--muted); }
-.sp-work  { background: var(--yellow); color: var(--black); }
-.sp-done  { background: #000; color: var(--yellow); }
-.sp-err   { background: #FFEBEE; color: var(--danger); }
-.tl-info  { font-size: 11px; color: var(--muted); }
-
-.tb-btn {
-  padding: 5px 12px; border: 1px solid var(--grey);
-  border-radius: var(--r); background: var(--white);
-  font-size: 11px; font-weight: 600; cursor: pointer;
-  color: var(--ink); font-family: inherit;
-  display: flex; align-items: center; gap: 5px;
-  transition: all 0.12s;
-}
-.tb-btn:hover { background: var(--faint); border-color: var(--black); }
-.tb-btn.primary { background: var(--black); color: var(--yellow); border-color: var(--black); }
-.tb-btn.primary:hover { background: #222; }
-
-/* Output */
-.output-area {
-  flex: 1; overflow-y: auto; padding: 1.5rem; background: var(--faint);
-}
-.output-area::-webkit-scrollbar { width: 5px; }
-.output-area::-webkit-scrollbar-thumb { background: var(--grey); }
-
-/* Empty state */
-.empty {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; height: 100%; gap: 12px; text-align: center;
-}
-.empty-icon {
-  width: 60px; height: 60px; border-radius: 4px;
-  background: var(--white); border: 1px solid var(--grey);
-  display: flex; align-items: center; justify-content: center; font-size: 24px;
-}
-.empty-h { font-size: 16px; font-weight: 700; color: var(--ink); letter-spacing: -0.3px; }
-.empty-p { font-size: 12px; color: var(--muted); max-width: 270px; line-height: 1.6; }
-
-/* Loading */
-.loading { display: flex; align-items: center; gap: 12px; padding: 2.5rem; color: var(--muted); font-size: 12px; }
-.dots { display: flex; gap: 5px; }
-.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); animation: bounce 1s ease-in-out infinite; }
-.dot:nth-child(2) { animation-delay: .15s; }
-.dot:nth-child(3) { animation-delay: .30s; }
-
-/* ─── MOM DOCUMENT ─── */
-.mom-doc {
-  background: var(--white);
-  border-radius: var(--r);
-  border: 1px solid var(--grey);
-  overflow: hidden;
-  max-width: 920px;
-  margin: 0 auto;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
-}
-
-/* Document header */
-.doc-head {
-  background: var(--black);
-  padding: 1.5rem 2rem;
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
-}
-.dh-left .dh-label {
-  font-size: 9px; text-transform: uppercase; letter-spacing: 2.5px;
-  color: #555; font-weight: 600; margin-bottom: 6px;
-}
-.dh-left .dh-project {
-  font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; line-height: 1.1;
-}
-.dh-left .dh-type {
-  font-size: 11px; color: #666; margin-top: 5px; font-weight: 500; letter-spacing: 0.5px;
-}
-.dh-meta { font-size: 10px; color: #555; line-height: 2.1; text-align: right; }
-.dh-meta span { color: #AAA; font-weight: 600; }
-
-/* Yellow accent rule */
-.doc-rule { height: 3px; background: var(--yellow); }
-
-/* Doc body */
-.doc-body { padding: 1.75rem 2rem; }
-.doc-sec  { margin-bottom: 1.75rem; }
-
-.sec-ttl {
-  font-size: 9px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 2px; color: var(--black);
-  border-bottom: 2px solid var(--black);
-  display: inline-block; padding-bottom: 3px; margin-bottom: 12px;
-}
-
-/* Info grid */
-.info-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 1px; background: var(--grey);
-  border: 1px solid var(--grey); border-radius: var(--r); overflow: hidden;
-}
-.ic { background: var(--white); padding: 9px 13px; }
-.ik { font-size: 8px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 3px; font-weight: 700; }
-.iv { font-size: 13px; font-weight: 500; color: var(--ink); }
-
-/* Attendees */
-.pills { display: flex; flex-wrap: wrap; gap: 6px; }
-.pill {
-  padding: 4px 11px; border-radius: 2px;
-  font-size: 11px; font-weight: 600;
-  background: var(--faint); color: var(--ink);
-  border: 1px solid var(--grey);
-}
-.pill.abs { background: #FFFBEE; color: #7A6000; border-color: #EDD800; }
-
-/* Key decisions */
-.dec-item { display: flex; gap: 10px; margin-bottom: 7px; font-size: 13px; line-height: 1.4; }
-.dec-n { color: var(--yellow); font-weight: 700; flex-shrink: 0; font-size: 14px; background: var(--black); width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 2px; margin-top: 1px; }
-
-/* Action table */
-.a-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
-.a-tbl th {
-  background: var(--black); color: var(--white);
-  padding: 7px 10px; text-align: left;
-  font-size: 9px; font-weight: 700;
-  letter-spacing: 1px; text-transform: uppercase;
-}
-.a-tbl th:first-child { width: 60px; }
-.a-tbl td { padding: 8px 10px; border-bottom: 1px solid var(--faint); vertical-align: top; line-height: 1.4; }
-.a-tbl tr:last-child td { border-bottom: none; }
-.a-tbl tr:nth-child(even) td { background: #FAFAF8; }
-.a-tbl tr:hover td { background: #F5F5F0; }
-
-.ref {
-  display: inline-block; background: var(--black); color: var(--white);
-  font-size: 8px; font-weight: 700; padding: 2px 6px;
-  border-radius: 2px; letter-spacing: 0.8px; white-space: nowrap;
-}
-.own {
-  display: inline-block; background: var(--faint); color: var(--ink);
-  font-size: 10px; font-weight: 600; padding: 2px 7px;
-  border-radius: 2px; white-space: nowrap; border: 1px solid var(--grey);
-}
-
-/* Risk table */
-.r-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
-.r-tbl th {
-  background: #111; color: var(--white);
-  padding: 7px 10px; text-align: left;
-  font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-}
-.r-tbl td { padding: 8px 10px; border-bottom: 1px solid var(--faint); vertical-align: top; }
-.r-tbl tr:nth-child(even) td { background: #FAFAF8; }
-
-.r-badge { display: inline-block; font-weight: 700; font-size: 10px; padding: 2px 8px; border-radius: 2px; white-space: nowrap; letter-spacing: 0.3px; }
-.r-high { background: #000; color: var(--yellow); }
-.r-med  { background: #555; color: #fff; }
-.r-low  { background: var(--grey); color: var(--ink); }
-
-.risk-leg { display: flex; gap: 16px; font-size: 10px; font-weight: 600; color: var(--muted); margin-bottom: 8px; align-items: center; }
-.rl { display: flex; align-items: center; gap: 5px; }
-.rl-sq { width: 8px; height: 8px; border-radius: 1px; }
-
-/* AOB */
-.aob {
-  background: var(--faint); border: 1px solid var(--grey);
-  border-radius: var(--r); padding: 10px 14px; font-size: 13px; min-height: 38px;
-}
-
-/* Next meeting */
-.next-mtg {
-  background: var(--yellow); border-radius: var(--r);
-  padding: 11px 15px; font-size: 13px; font-weight: 500;
-  color: var(--black); line-height: 1.5;
-  border-left: 4px solid var(--black);
-}
-
-/* Sig */
-.sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.75rem; }
-.sig-box  { border: 1px solid var(--grey); border-radius: var(--r); padding: 12px; }
-.sig-lbl  { font-size: 8px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 700; margin-bottom: 20px; }
-.sig-val  { border-top: 1px solid var(--grey); padding-top: 6px; font-size: 13px; font-weight: 600; }
-
-/* Doc footer */
-.doc-foot {
-  background: var(--black); padding: 0.65rem 2rem;
-  display: flex; justify-content: space-between; align-items: center;
-  font-size: 9px; color: #444; letter-spacing: 0.3px;
-}
-.doc-foot strong { color: #888; }
-.doc-foot .brand { font-weight: 600; color: #333; letter-spacing: 1px; text-transform: uppercase; }
-
-/* Trimmed notice */
-.trim-bar {
-  background: #FFFBEE; border-bottom: 1px solid #EDD800;
-  padding: 6px 2rem; font-size: 10px; color: #7A6000; font-weight: 500;
-}
-
-/* Error */
-.err-wrap { padding: 2rem; }
-.err-title { font-size: 14px; font-weight: 700; color: var(--danger); margin-bottom: 6px; }
-.err-msg   { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
-.err-tip   { background: #FFFBEE; border-left: 3px solid var(--yellow); padding: 10px 14px; font-size: 12px; color: #7A6000; border-radius: 0 var(--r) var(--r) 0; }
-
-/* Spinner */
-.spinner { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.15); border-top-color: var(--black); border-radius: 50%; animation: spin .65s linear infinite; flex-shrink: 0; }
-
-@keyframes spin   { to { transform: rotate(360deg); } }
-@keyframes bounce { 0%,80%,100% { transform: scale(.45); opacity: .3; } 40% { transform: scale(1); opacity: 1; } }
-
+body { font-family:"Helvetica Neue",Helvetica,Arial,sans-serif; background:var(--white); color:var(--ink); min-height:100vh; display:flex; flex-direction:column; font-size:13px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+.app-header { background:var(--black); height:54px; display:flex; align-items:center; justify-content:space-between; padding:0 1.5rem; flex-shrink:0; position:sticky; top:0; z-index:100; border-bottom:3px solid var(--yellow); }
+.header-left { display:flex; align-items:center; gap:16px; }
+.edge-logo { height:28px; width:auto; filter:brightness(0) invert(1); }
+.h-divider { width:1px; height:20px; background:#333; }
+.h-title { color:#888; font-size:11px; font-weight:500; letter-spacing:2.5px; text-transform:uppercase; }
+.h-badge { background:#111; border:1px solid #333; color:#666; font-size:10px; padding:3px 10px; border-radius:2px; letter-spacing:1px; font-weight:500; }
+.status-dot { width:6px; height:6px; border-radius:50%; background:var(--yellow); flex-shrink:0; }
+.app-body { display:flex; flex:1; overflow:hidden; height:calc(100vh - 54px); }
+.sidebar { width:296px; flex-shrink:0; background:var(--white); border-right:1px solid var(--grey); display:flex; flex-direction:column; overflow-y:auto; }
+.sidebar::-webkit-scrollbar { width:3px; }
+.sidebar::-webkit-scrollbar-thumb { background:var(--grey); }
+.sb-sec { padding:1rem; border-bottom:1px solid var(--faint); }
+.sb-hdr { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.sb-step { width:18px; height:18px; border-radius:2px; background:var(--black); color:var(--white); font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.sb-title { font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; }
+.lbl { display:block; font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:8px 0 3px; }
+.lbl:first-of-type { margin-top:0; }
+input[type=text],input[type=date],input[type=time],input[type=password],select,textarea { width:100%; border:1px solid var(--grey); border-radius:var(--r); padding:7px 9px; font-size:12px; font-family:inherit; color:var(--ink); background:#fff; transition:border-color .15s; appearance:auto; }
+input:focus,select:focus,textarea:focus { outline:none; border-color:var(--black); box-shadow:0 0 0 2px rgba(0,0,0,.06); }
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+textarea { height:138px; resize:vertical; line-height:1.5; font-size:12px; }
+.char-info { font-size:9px; color:var(--muted); text-align:right; margin-top:3px; }
+.chips { display:flex; flex-wrap:wrap; gap:5px; }
+.chip { padding:4px 10px; border-radius:2px; border:1px solid var(--grey); font-size:11px; font-weight:600; cursor:pointer; background:#fff; color:var(--muted); user-select:none; transition:all .12s; }
+.chip.on { background:var(--black); border-color:var(--black); color:var(--white); }
+.chip:hover:not(.on) { border-color:var(--black); color:var(--black); }
+.tog-row { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--faint); }
+.tog-row:last-child { border-bottom:none; }
+.tl { font-size:12px; font-weight:600; color:var(--ink); }
+.ts { font-size:10px; color:var(--muted); margin-top:1px; }
+.tog-sw { width:36px; height:20px; border-radius:20px; cursor:pointer; position:relative; flex-shrink:0; transition:background .2s; }
+.tog-th { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:left .2s; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+.api-notice { background:#FFFBEE; border:1px solid #EDD800; border-radius:var(--r); padding:9px 11px; margin-bottom:8px; }
+.an-title { font-size:10px; font-weight:700; color:#7A6000; margin-bottom:2px; }
+.an-body { font-size:10px; color:#7A6000; line-height:1.5; }
+.an-body a { color:var(--black); font-weight:700; }
+.btn-gen { margin:1rem; width:calc(100% - 2rem); background:var(--yellow); color:var(--black); border:none; border-radius:var(--r); padding:11px; font-size:12px; font-weight:700; cursor:pointer; letter-spacing:1.5px; text-transform:uppercase; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:8px; transition:background .12s,transform .08s; }
+.btn-gen:hover:not(:disabled) { background:#E8BC00; }
+.btn-gen:active:not(:disabled) { transform:scale(.98); }
+.btn-gen:disabled { background:var(--grey); color:var(--muted); cursor:not-allowed; }
+.panel-right { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.toolbar { background:var(--white); border-bottom:1px solid var(--grey); padding:.55rem 1.5rem; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.tl-left { display:flex; align-items:center; gap:10px; }
+.s-pill { font-size:9px; font-weight:700; padding:3px 9px; border-radius:2px; letter-spacing:1px; text-transform:uppercase; }
+.sp-idle { background:var(--faint); color:var(--muted); }
+.sp-work { background:var(--yellow); color:var(--black); }
+.sp-done { background:#000; color:var(--yellow); }
+.sp-err  { background:#FFEBEE; color:var(--danger); }
+.tl-info { font-size:11px; color:var(--muted); }
+.tb-btn { padding:5px 12px; border:1px solid var(--grey); border-radius:var(--r); background:var(--white); font-size:11px; font-weight:600; cursor:pointer; color:var(--ink); font-family:inherit; display:flex; align-items:center; gap:5px; transition:all .12s; }
+.tb-btn:hover { background:var(--faint); border-color:var(--black); }
+.tb-btn.primary { background:var(--black); color:var(--yellow); border-color:var(--black); }
+.tb-btn.primary:hover { background:#222; }
+.output-area { flex:1; overflow-y:auto; padding:1.5rem; background:var(--faint); }
+.output-area::-webkit-scrollbar { width:5px; }
+.output-area::-webkit-scrollbar-thumb { background:var(--grey); }
+.empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; text-align:center; }
+.empty-icon { width:60px; height:60px; border-radius:4px; background:var(--white); border:1px solid var(--grey); display:flex; align-items:center; justify-content:center; font-size:24px; }
+.empty-h { font-size:16px; font-weight:700; color:var(--ink); letter-spacing:-.3px; }
+.empty-p { font-size:12px; color:var(--muted); max-width:270px; line-height:1.6; }
+.loading { display:flex; align-items:center; gap:12px; padding:2.5rem; color:var(--muted); font-size:12px; }
+.dots { display:flex; gap:5px; }
+.dot { width:7px; height:7px; border-radius:50%; background:var(--yellow); animation:bounce 1s ease-in-out infinite; }
+.dot:nth-child(2) { animation-delay:.15s; }
+.dot:nth-child(3) { animation-delay:.30s; }
+.mom-doc { background:var(--white); border-radius:var(--r); border:1px solid var(--grey); overflow:hidden; max-width:920px; margin:0 auto; box-shadow:0 2px 16px rgba(0,0,0,.07); }
+.doc-head { background:var(--black); padding:1.5rem 2rem; display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; }
+.dh-label { font-size:9px; text-transform:uppercase; letter-spacing:2.5px; color:#555; font-weight:600; margin-bottom:6px; }
+.dh-project { font-size:22px; font-weight:700; color:#fff; letter-spacing:-.5px; line-height:1.1; }
+.dh-type { font-size:11px; color:#666; margin-top:5px; font-weight:500; letter-spacing:.5px; }
+.dh-meta { font-size:10px; color:#555; line-height:2.1; text-align:right; }
+.dh-meta span { color:#AAA; font-weight:600; }
+.doc-rule { height:3px; background:var(--yellow); }
+.doc-body { padding:1.75rem 2rem; }
+.doc-sec { margin-bottom:1.75rem; }
+.sec-ttl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:var(--black); border-bottom:2px solid var(--black); display:inline-block; padding-bottom:3px; margin-bottom:12px; }
+.info-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--grey); border:1px solid var(--grey); border-radius:var(--r); overflow:hidden; }
+.ic { background:var(--white); padding:9px 13px; }
+.ik { font-size:8px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:3px; font-weight:700; }
+.iv { font-size:13px; font-weight:500; color:var(--ink); }
+.pills { display:flex; flex-wrap:wrap; gap:6px; }
+.pill { padding:4px 11px; border-radius:2px; font-size:11px; font-weight:600; background:var(--faint); color:var(--ink); border:1px solid var(--grey); }
+.pill.abs { background:#FFFBEE; color:#7A6000; border-color:#EDD800; }
+.dec-item { display:flex; gap:10px; margin-bottom:7px; font-size:13px; line-height:1.4; }
+.dec-n { color:var(--yellow); font-weight:700; flex-shrink:0; font-size:14px; background:var(--black); width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:2px; margin-top:1px; }
+.a-tbl { width:100%; border-collapse:collapse; font-size:12px; }
+.a-tbl th { background:var(--black); color:var(--white); padding:7px 10px; text-align:left; font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+.a-tbl td { padding:8px 10px; border-bottom:1px solid var(--faint); vertical-align:top; line-height:1.4; }
+.a-tbl tr:last-child td { border-bottom:none; }
+.a-tbl tr:nth-child(even) td { background:#FAFAF8; }
+.ref { display:inline-block; background:var(--black); color:var(--white); font-size:8px; font-weight:700; padding:2px 6px; border-radius:2px; letter-spacing:.8px; white-space:nowrap; }
+.own { display:inline-block; background:var(--faint); color:var(--ink); font-size:10px; font-weight:600; padding:2px 7px; border-radius:2px; white-space:nowrap; border:1px solid var(--grey); }
+.r-tbl { width:100%; border-collapse:collapse; font-size:12px; }
+.r-tbl th { background:#111; color:var(--white); padding:7px 10px; text-align:left; font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+.r-tbl td { padding:8px 10px; border-bottom:1px solid var(--faint); vertical-align:top; }
+.r-tbl tr:nth-child(even) td { background:#FAFAF8; }
+.r-badge { display:inline-block; font-weight:700; font-size:10px; padding:2px 8px; border-radius:2px; white-space:nowrap; letter-spacing:.3px; }
+.r-high { background:#000; color:var(--yellow); }
+.r-med  { background:#555; color:#fff; }
+.r-low  { background:var(--grey); color:var(--ink); }
+.risk-leg { display:flex; gap:16px; font-size:10px; font-weight:600; color:var(--muted); margin-bottom:8px; align-items:center; }
+.rl { display:flex; align-items:center; gap:5px; }
+.rl-sq { width:8px; height:8px; border-radius:1px; }
+.aob { background:var(--faint); border:1px solid var(--grey); border-radius:var(--r); padding:10px 14px; font-size:13px; min-height:38px; }
+.next-mtg { background:var(--yellow); border-radius:var(--r); padding:11px 15px; font-size:13px; font-weight:500; color:var(--black); line-height:1.5; border-left:4px solid var(--black); }
+.sig-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1.75rem; }
+.sig-box { border:1px solid var(--grey); border-radius:var(--r); padding:12px; }
+.sig-lbl { font-size:8px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-weight:700; margin-bottom:20px; }
+.sig-val { border-top:1px solid var(--grey); padding-top:6px; font-size:13px; font-weight:600; }
+.doc-foot { background:var(--black); padding:.65rem 2rem; display:flex; justify-content:space-between; align-items:center; font-size:9px; color:#444; letter-spacing:.3px; }
+.doc-foot strong { color:#888; }
+.doc-foot .brand { font-weight:600; color:#333; letter-spacing:1px; text-transform:uppercase; }
+.trim-bar { background:#FFFBEE; border-bottom:1px solid #EDD800; padding:6px 2rem; font-size:10px; color:#7A6000; font-weight:500; }
+.err-wrap { padding:2rem; }
+.err-title { font-size:14px; font-weight:700; color:var(--danger); margin-bottom:6px; }
+.err-msg { font-size:12px; color:var(--muted); margin-bottom:14px; }
+.err-tip { background:#FFFBEE; border-left:3px solid var(--yellow); padding:10px 14px; font-size:12px; color:#7A6000; border-radius:0 var(--r) var(--r) 0; }
+.spinner { width:14px; height:14px; border:2px solid rgba(0,0,0,.15); border-top-color:var(--black); border-radius:50%; animation:spin .65s linear infinite; flex-shrink:0; }
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes bounce { 0%,80%,100% { transform:scale(.45); opacity:.3; } 40% { transform:scale(1); opacity:1; } }
 @media print {
-  .sidebar, .app-header, .toolbar { display: none !important; }
-  .panel-right { width: 100%; }
-  .output-area { padding: 0; overflow: visible; background: none; }
-  .mom-doc { box-shadow: none; border: none; max-width: none; }
-  .app-body { height: auto; overflow: visible; }
-  body { height: auto; }
+  .sidebar,.app-header,.toolbar { display:none !important; }
+  .panel-right { width:100%; }
+  .output-area { padding:0; overflow:visible; background:none; }
+  .mom-doc { box-shadow:none; border:none; max-width:none; }
+  .app-body { height:auto; overflow:visible; }
+  body { height:auto; }
 }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="app-header">
   <div class="header-left">
     <img src="data:image/png;base64,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" class="edge-logo" alt="EDGE">
@@ -424,18 +151,14 @@ textarea { height: 138px; resize: vertical; line-height: 1.5; font-size: 12px; }
     <span class="h-title">Minutes of Meeting</span>
   </div>
   <div class="header-left">
-    <div class="status-dot" id="sDot"></div>
+    <div class="status-dot"></div>
     <span class="h-badge">v2 · Confidential</span>
   </div>
 </header>
 
-<!-- BODY -->
 <div class="app-body">
-
-  <!-- SIDEBAR -->
   <aside class="sidebar">
 
-    <!-- 1. Meeting Details -->
     <div class="sb-sec">
       <div class="sb-hdr"><div class="sb-step">1</div><span class="sb-title">Meeting Details</span></div>
       <span class="lbl">Project Name</span>
@@ -452,26 +175,21 @@ textarea { height: 138px; resize: vertical; line-height: 1.5; font-size: 12px; }
       <input type="text" id="mLoc" placeholder="EDGE Office / MS Teams">
       <span class="lbl">Meeting Type</span>
       <select id="mType">
-        <option>Progress Meeting</option>
-        <option>Design Review</option>
-        <option>Client Meeting</option>
-        <option>Technical Coordination</option>
-        <option>Commercial Review</option>
-        <option>Kick-off Meeting</option>
+        <option>Progress Meeting</option><option>Design Review</option>
+        <option>Client Meeting</option><option>Technical Coordination</option>
+        <option>Commercial Review</option><option>Kick-off Meeting</option>
         <option>Other</option>
       </select>
       <span class="lbl">Prepared By</span>
       <input type="text" id="prepBy" placeholder="Your name">
     </div>
 
-    <!-- 2. Transcript -->
     <div class="sb-sec">
       <div class="sb-hdr"><div class="sb-step">2</div><span class="sb-title">Read.ai Transcript / Summary</span></div>
       <textarea id="transcript" placeholder="Paste your Read.ai transcript, summary, or meeting notes here…"></textarea>
       <div class="char-info" id="charInfo">0 characters</div>
     </div>
 
-    <!-- 3. Agenda -->
     <div class="sb-sec">
       <div class="sb-hdr"><div class="sb-step">3</div><span class="sb-title">Agenda Sections</span></div>
       <div class="chips">
@@ -486,7 +204,6 @@ textarea { height: 138px; resize: vertical; line-height: 1.5; font-size: 12px; }
       </div>
     </div>
 
-    <!-- 4. Options -->
     <div class="sb-sec">
       <div class="sb-hdr"><div class="sb-step">4</div><span class="sb-title">Options</span></div>
       <div class="tog-row">
@@ -503,7 +220,7 @@ textarea { height: 138px; resize: vertical; line-height: 1.5; font-size: 12px; }
       </div>
     </div>
 
-    <!-- 5. API Key -->
+    <!-- API key section — hidden automatically when build injects the key -->
     <div class="sb-sec" id="apiSec">
       <div class="sb-hdr">
         <div class="sb-step" style="background:var(--yellow);color:var(--black);">5</div>
@@ -513,18 +230,14 @@ textarea { height: 138px; resize: vertical; line-height: 1.5; font-size: 12px; }
         <div class="an-title">Required — one time per session</div>
         <div class="an-body">Enter your Anthropic API key. Get one at <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a>. Never stored.</div>
       </div>
-      <input type="password" id="apiKey" placeholder="sk-ant-api03-…" style="font-family:monospace;font-size:11px;letter-spacing:0.5px;">
+      <input type="password" id="apiKey" placeholder="sk-ant-api03-…" style="font-family:monospace;font-size:11px;letter-spacing:.5px;">
     </div>
 
     <div id="errBanner" style="display:none;margin:0 1rem;padding:8px 10px;background:#FFEBEE;border-radius:4px;font-size:11px;color:#C0392B;line-height:1.5;"></div>
 
-    <button class="btn-gen" id="genBtn" onclick="generate()">
-      Generate Minutes
-    </button>
-
+    <button class="btn-gen" id="genBtn" onclick="generate()">Generate Minutes</button>
   </aside>
 
-  <!-- RIGHT PANEL -->
   <div class="panel-right">
     <div class="toolbar">
       <div class="tl-left">
@@ -536,7 +249,6 @@ textarea { height: 138px; resize: vertical; line-height: 1.5; font-size: 12px; }
         <button class="tb-btn primary" onclick="window.print()">Print / Save PDF</button>
       </div>
     </div>
-
     <div class="output-area" id="outArea">
       <div class="empty">
         <div class="empty-icon">📋</div>
@@ -545,11 +257,16 @@ textarea { height: 138px; resize: vertical; line-height: 1.5; font-size: 12px; }
       </div>
     </div>
   </div>
-
 </div>
 
 <script>
-// Init
+// ── Key injected at build time by Netlify (see netlify.toml + build.sh)
+// If placeholder was replaced, INJECTED_KEY will be a real key.
+// If not (local/GitHub Pages), falls back to manual input.
+const INJECTED_KEY = '##ANTHROPIC_KEY##';
+const BUILD_KEY = (INJECTED_KEY.startsWith('##')) ? '' : INJECTED_KEY;
+if (BUILD_KEY) document.getElementById('apiSec').style.display = 'none';
+
 document.getElementById('mDate').valueAsDate = new Date();
 
 document.querySelectorAll('.tog-sw').forEach(t => {
@@ -560,244 +277,111 @@ function initTog(t) {
   const on = t.dataset.on==='1';
   t.style.background = on ? '#000' : '#D3D3D3';
   let th = t.querySelector('.tog-th');
-  if (!th) { th = document.createElement('div'); th.className='tog-th'; t.appendChild(th); }
+  if (!th) { th=document.createElement('div'); th.className='tog-th'; t.appendChild(th); }
   th.style.left = on ? '18px' : '2px';
 }
-
 document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', ()=> c.classList.toggle('on')));
-
 document.getElementById('transcript').addEventListener('input', function() {
   const n = this.value.length;
   const el = document.getElementById('charInfo');
-  el.textContent = n.toLocaleString() + ' characters' + (n > 60000 ? ' — will be condensed' : '');
-  el.style.color = n > 60000 ? '#B07000' : '#6B6B6B';
+  el.textContent = n.toLocaleString()+' characters'+(n>60000?' — will be condensed':'');
+  el.style.color = n>60000 ? '#B07000' : '#6B6B6B';
 });
 
-// If Netlify injects the key, hide the API section
-const ENV_KEY = window.__ANTHROPIC_KEY__ || '';
-if (ENV_KEY) document.getElementById('apiSec').style.display = 'none';
-
-const getKey    = () => ENV_KEY || document.getElementById('apiKey').value.trim();
-const getAgenda = () => [...document.querySelectorAll('.chip.on')].map(c => c.dataset.v);
-const togOn     = id => document.getElementById(id).dataset.on === '1';
-const fmt = d => {
-  if (!d) return '—';
-  try { return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
-  catch { return d; }
-};
-const prepTx = (text, max=55000) => text.length <= max
-  ? { text, trimmed: false }
-  : { text: text.slice(0,34000)+'\n\n[...CONDENSED...]\n\n'+text.slice(-18000), trimmed: true };
+const getKey    = () => BUILD_KEY || document.getElementById('apiKey').value.trim();
+const getAgenda = () => [...document.querySelectorAll('.chip.on')].map(c=>c.dataset.v);
+const togOn     = id => document.getElementById(id).dataset.on==='1';
+const fmt = d => { if(!d) return '—'; try { return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); } catch { return d; } };
+const prepTx = (t,max=55000) => t.length<=max ? {text:t,trimmed:false} : {text:t.slice(0,34000)+'\n\n[...CONDENSED...]\n\n'+t.slice(-18000),trimmed:true};
 
 async function generate() {
   const key = getKey();
   if (!key) { showErr('Please enter your Anthropic API key in Step 5.'); return; }
   const raw = document.getElementById('transcript').value.trim();
-  if (!raw)  { showErr('Please paste your meeting transcript first.'); return; }
-
+  if (!raw) { showErr('Please paste your meeting transcript first.'); return; }
   hideErr();
-  const { text: tx, trimmed } = prepTx(raw);
-  const agenda = getAgenda();
-  const iR = togOn('tRisk'), iMA = togOn('tMA'), iF = togOn('tTone');
-  const pName  = document.getElementById('pName').value  || 'Project TBC';
-  const pNo    = document.getElementById('pNo').value    || '—';
-  const mNo    = document.getElementById('mNo').value    || '—';
-  const mDate  = document.getElementById('mDate').value;
-  const mTime  = document.getElementById('mTime').value  || '—';
-  const mLoc   = document.getElementById('mLoc').value   || '—';
-  const mType  = document.getElementById('mType').value;
-  const prepBy = document.getElementById('prepBy').value || '—';
 
-  setStat('work','Generating', trimmed ? 'Processing condensed transcript…' : 'AI is processing your transcript…');
-  document.getElementById('outArea').innerHTML = '<div class="loading"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>Extracting minutes from transcript…</div>';
-  document.getElementById('genBtn').disabled = true;
-  document.getElementById('genBtn').innerHTML = '<div class="spinner"></div>&nbsp;Generating…';
-  document.getElementById('tbActs').style.display = 'none';
+  const {text:tx,trimmed} = prepTx(raw);
+  const agenda=getAgenda(), iR=togOn('tRisk'), iMA=togOn('tMA'), iF=togOn('tTone');
+  const pName=document.getElementById('pName').value||'Project TBC';
+  const pNo=document.getElementById('pNo').value||'—';
+  const mNo=document.getElementById('mNo').value||'—';
+  const mDate=document.getElementById('mDate').value;
+  const mTime=document.getElementById('mTime').value||'—';
+  const mLoc=document.getElementById('mLoc').value||'—';
+  const mType=document.getElementById('mType').value;
+  const prepBy=document.getElementById('prepBy').value||'—';
 
-  const schema = `{"attendees":[{"name":"str","role":"str","initials":"str"}],"absent":[{"name":"str","apology":true}],"sections":{${agenda.map(a=>`"${a}":[{"ref":"${a[0].toUpperCase()}001","action":"str","owner":"str","due":"DD-MMM-YY or TBC","status":"Open"}]`).join(',')}},"mattersArising":[{"ref":"MA001","action":"str","owner":"str","due":"str","status":"Open"}],"risks":[{"id":"R001","description":"str","likelihood":3,"impact":4,"rating":12,"ratingLabel":"HIGH","owner":"str","mitigation":"str"}],"aob":"str","nextMeeting":{"date":"str","time":"str","location":"str"},"keyDecisions":["str"]}`;
+  setStat('work','Generating',trimmed?'Processing condensed transcript…':'AI is processing your transcript…');
+  document.getElementById('outArea').innerHTML='<div class="loading"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>Extracting minutes from transcript…</div>';
+  document.getElementById('genBtn').disabled=true;
+  document.getElementById('genBtn').innerHTML='<div class="spinner"></div>&nbsp;Generating…';
+  document.getElementById('tbActs').style.display='none';
 
-  const sys = `You are a professional meeting minutes writer for EDGE, a leading architecture and design consultancy in Dubai.
-Return ONLY valid compact JSON — no markdown, no backticks, no trailing commas, no comments. All strings properly closed and escaped.
-Schema: ${schema}
-Rules:
-- Extract sections: ${agenda.join(', ')}. Max 10 actions per section. Keep action text under 25 words.
-- ${iR ? 'Extract up to 10 risks. L and I are 1-5. Rating=L×I. 1-5=LOW, 6-10=MED, 11-25=HIGH.' : 'risks: []'}
-- ${iMA ? 'Extract previous meeting actions if mentioned. Max 6.' : 'mattersArising: []'}
-- Tone: ${iF ? 'formal third-person passive, LDC professional standard' : 'clear and concise'}
-- Status always Open unless transcript confirms closed. Due: TBC if unknown. Max 5 keyDecisions.
-- No special characters that would break JSON. No newlines inside strings.`;
+  const schema=`{"attendees":[{"name":"str","role":"str","initials":"str"}],"absent":[{"name":"str","apology":true}],"sections":{${agenda.map(a=>`"${a}":[{"ref":"${a[0].toUpperCase()}001","action":"str","owner":"str","due":"DD-MMM-YY or TBC","status":"Open"}]`).join(',')}},"mattersArising":[{"ref":"MA001","action":"str","owner":"str","due":"str","status":"Open"}],"risks":[{"id":"R001","description":"str","likelihood":3,"impact":4,"rating":12,"ratingLabel":"HIGH","owner":"str","mitigation":"str"}],"aob":"str","nextMeeting":{"date":"str","time":"str","location":"str"},"keyDecisions":["str"]}`;
+  const sys=`You are a professional meeting minutes writer for EDGE, a leading architecture and design consultancy in Dubai. Return ONLY valid compact JSON — no markdown, no backticks, no trailing commas. Schema: ${schema}. Rules: sections ${agenda.join(', ')}, max 10 actions each under 25 words. ${iR?'Up to 10 risks, L×I 1-5, 1-5=LOW 6-10=MED 11-25=HIGH.':'risks:[].'}  ${iMA?'Extract previous actions, max 6.':'mattersArising:[].'}  Tone: ${iF?'formal third-person passive LDC standard':'clear concise'}. Status Open unless confirmed closed. Due TBC if unknown. Max 5 keyDecisions. No special chars breaking JSON.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-request-allowed': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 8000,
-        system: sys,
-        messages: [{ role: 'user', content: `Project: ${pName} (${pNo}) | ${mType} — ${mNo} | Date: ${mDate}\n\nTRANSCRIPT:\n${tx}` }]
-      })
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-request-allowed':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:sys,messages:[{role:'user',content:`Project: ${pName} (${pNo}) | ${mType} — ${mNo} | Date: ${mDate}\n\nTRANSCRIPT:\n${tx}`}]})
     });
-
-    if (!res.ok) {
-      const e = await res.json().catch(()=>({}));
-      throw new Error(e.error?.message || `HTTP ${res.status} — check your API key and billing at console.anthropic.com`);
-    }
-
-    const data = await res.json();
-    const raw2 = (data.content||[]).map(i=>i.text||'').join('');
-    const clean = raw2.replace(/```json|```/g,'').trim();
-
-    let parsed;
-    try { parsed = JSON.parse(clean); }
-    catch {
-      const lb = clean.lastIndexOf('}');
-      if (lb > 100) { try { parsed = JSON.parse(clean.slice(0,lb+1)); } catch { throw new Error('Response was cut off. Try pasting the Read.ai Summary tab instead of the full transcript.'); } }
-      else throw new Error('Could not parse AI response. Try the Read.ai Summary instead of the full transcript.');
-    }
-
-    renderDoc(parsed, { pName, pNo, mNo, mDate, mTime, mLoc, mType, prepBy, agenda, iR, iMA, trimmed });
+    if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.error?.message||`HTTP ${res.status}`); }
+    const data=await res.json();
+    const raw2=(data.content||[]).map(i=>i.text||'').join('');
+    const clean=raw2.replace(/```json|```/g,'').trim();
+    let parsed; try { parsed=JSON.parse(clean); } catch { const lb=clean.lastIndexOf('}'); if(lb>100){try{parsed=JSON.parse(clean.slice(0,lb+1));}catch{throw new Error('Response cut off. Try Read.ai Summary tab instead of full transcript.');}}else throw new Error('Could not parse response. Try Read.ai Summary instead.'); }
+    renderDoc(parsed,{pName,pNo,mNo,mDate,mTime,mLoc,mType,prepBy,agenda,iR,iMA,trimmed});
     setStat('done','Complete','Minutes generated — print or save as PDF');
-    document.getElementById('tbActs').style.display = '';
-
+    document.getElementById('tbActs').style.display='';
   } catch(e) {
     showErr(e.message);
-    document.getElementById('outArea').innerHTML = `<div class="err-wrap"><div class="err-title">Generation failed</div><div class="err-msg">${e.message}</div><div class="err-tip"><strong>Tip:</strong> For long transcripts, use the <strong>Read.ai Summary</strong> tab — shorter, faster, and produces cleaner output.</div></div>`;
-    setStat('err','Error','See error message below');
+    document.getElementById('outArea').innerHTML=`<div class="err-wrap"><div class="err-title">Generation failed</div><div class="err-msg">${e.message}</div><div class="err-tip"><strong>Tip:</strong> For long transcripts use the <strong>Read.ai Summary</strong> tab — shorter, faster, cleaner output.</div></div>`;
+    setStat('err','Error','See error message');
   }
-
-  document.getElementById('genBtn').disabled = false;
-  document.getElementById('genBtn').innerHTML = '↺ &nbsp;Regenerate';
+  document.getElementById('genBtn').disabled=false;
+  document.getElementById('genBtn').innerHTML='↺ &nbsp;Regenerate';
 }
 
-function renderDoc(d, m) {
-  const today = fmt(new Date().toISOString().split('T')[0]);
-  const sc  = s => { const l=(s||'').toLowerCase(); return l.includes('close')||l==='done'?'#1A6B2A':l.includes('progress')?'#B07000':'#C0392B'; };
-  const rCl = r => r.ratingLabel==='HIGH'?'r-high':r.ratingLabel==='MED'?'r-med':'r-low';
-
-  let h = '<div class="mom-doc">';
-  if (m.trimmed) h += '<div class="trim-bar">⚠ Transcript was condensed for processing. All key actions and decisions have been captured.</div>';
-
-  // Header
-  h += `<div class="doc-head">
-    <div class="dh-left">
-      <div class="dh-label">Minutes of Meeting</div>
-      <div class="dh-project">${m.pName}</div>
-      <div class="dh-type">${m.mType}</div>
-    </div>
-    <div class="dh-meta">
-      ${[['Project',m.pNo],['Meeting',m.mNo],['Date',fmt(m.mDate)],['Issued',today],['Rev','0']].map(([k,v])=>`<div>${k}&ensp;<span>${v}</span></div>`).join('')}
-    </div>
-  </div>
-  <div class="doc-rule"></div>
-  <div class="doc-body">`;
-
-  // Meeting info
-  h += `<div class="doc-sec"><div class="sec-ttl">Meeting Information</div>
-    <div class="info-grid">
-      ${[['Time',m.mTime],['Location / Platform',m.mLoc],['Prepared By',m.prepBy],['Meeting Type',m.mType]].map(([k,v])=>`<div class="ic"><div class="ik">${k}</div><div class="iv">${v}</div></div>`).join('')}
-    </div></div>`;
-
-  // Key decisions
-  if (d.keyDecisions?.length) {
-    h += `<div class="doc-sec"><div class="sec-ttl">Key Decisions</div>
-      ${d.keyDecisions.map((x,i)=>`<div class="dec-item"><span class="dec-n">${i+1}</span><span>${x}</span></div>`).join('')}
-    </div>`;
-  }
-
-  // Attendees
-  h += `<div class="doc-sec"><div class="sec-ttl">Attendees</div><div class="pills">
-    ${d.attendees?.length ? d.attendees.map(a=>`<span class="pill">${a.name}${a.initials?' ('+a.initials+')':''}</span>`).join('') : '<span style="font-size:12px;color:#6B6B6B">Not identified in transcript</span>'}
-  </div>`;
-  if (d.absent?.length) h += `<div style="margin-top:8px"><div style="font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#6B6B6B;font-weight:700;margin-bottom:5px">Absent</div><div class="pills">${d.absent.map(a=>`<span class="pill abs">${a.name}${a.apology?' ✓':''}</span>`).join('')}</div></div>`;
-  h += '</div>';
-
-  // Matters arising
-  if (m.iMA && d.mattersArising?.length) {
-    h += `<div class="doc-sec"><div class="sec-ttl">Matters Arising — Previous Actions</div>
-      <table class="a-tbl"><thead><tr><th>Ref</th><th>Action</th><th>Owner</th><th>Due</th><th>Status</th></tr></thead><tbody>
-      ${d.mattersArising.map(a=>`<tr><td><span class="ref">${a.ref||''}</span></td><td>${a.action||''}</td><td><span class="own">${a.owner||''}</span></td><td style="font-size:11px;white-space:nowrap">${a.due||''}</td><td><span style="color:${sc(a.status)};font-weight:700;font-size:10px">${a.status||'Open'}</span></td></tr>`).join('')}
-      </tbody></table></div>`;
-  }
-
-  // Action sections
-  m.agenda.forEach((sec, idx) => {
-    const rows = d.sections?.[sec] || [];
-    h += `<div class="doc-sec"><div class="sec-ttl">${idx+(m.iMA?2:1)}. ${sec}</div>`;
-    if (rows.length) {
-      h += `<table class="a-tbl"><thead><tr><th>Ref</th><th>Discussion / Action</th><th>Action By</th><th>Due Date</th><th>Status</th></tr></thead><tbody>
-        ${rows.map(a=>`<tr><td><span class="ref">${a.ref||''}</span></td><td>${a.action||''}</td><td><span class="own">${a.owner||''}</span></td><td style="font-size:11px;white-space:nowrap">${a.due||''}</td><td><span style="color:${sc(a.status)};font-weight:700;font-size:10px">${a.status||'Open'}</span></td></tr>`).join('')}
-      </tbody></table>`;
-    } else {
-      h += '<div style="font-size:12px;color:#6B6B6B;padding:5px 0">No actions recorded for this section.</div>';
-    }
-    h += '</div>';
+function renderDoc(d,m) {
+  const today=fmt(new Date().toISOString().split('T')[0]);
+  const sc=s=>{const l=(s||'').toLowerCase();return l.includes('close')||l==='done'?'#1A6B2A':l.includes('progress')?'#B07000':'#C0392B';};
+  const rCl=r=>r.ratingLabel==='HIGH'?'r-high':r.ratingLabel==='MED'?'r-med':'r-low';
+  let h='<div class="mom-doc">';
+  if(m.trimmed) h+='<div class="trim-bar">⚠ Transcript condensed for processing. All key actions and decisions captured.</div>';
+  h+=`<div class="doc-head"><div><div class="dh-label">Minutes of Meeting</div><div class="dh-project">${m.pName}</div><div class="dh-type">${m.mType}</div></div><div class="dh-meta">${[['Project',m.pNo],['Meeting',m.mNo],['Date',fmt(m.mDate)],['Issued',today],['Rev','0']].map(([k,v])=>`<div>${k}&ensp;<span>${v}</span></div>`).join('')}</div></div><div class="doc-rule"></div><div class="doc-body">`;
+  h+=`<div class="doc-sec"><div class="sec-ttl">Meeting Information</div><div class="info-grid">${[['Time',m.mTime],['Location / Platform',m.mLoc],['Prepared By',m.prepBy],['Meeting Type',m.mType]].map(([k,v])=>`<div class="ic"><div class="ik">${k}</div><div class="iv">${v}</div></div>`).join('')}</div></div>`;
+  if(d.keyDecisions?.length) h+=`<div class="doc-sec"><div class="sec-ttl">Key Decisions</div>${d.keyDecisions.map((x,i)=>`<div class="dec-item"><span class="dec-n">${i+1}</span><span>${x}</span></div>`).join('')}</div>`;
+  h+=`<div class="doc-sec"><div class="sec-ttl">Attendees</div><div class="pills">${d.attendees?.length?d.attendees.map(a=>`<span class="pill">${a.name}${a.initials?' ('+a.initials+')':''}</span>`).join(''):'<span style="font-size:12px;color:#6B6B6B">Not identified in transcript</span>'}</div>`;
+  if(d.absent?.length) h+=`<div style="margin-top:8px"><div style="font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#6B6B6B;font-weight:700;margin-bottom:5px">Absent</div><div class="pills">${d.absent.map(a=>`<span class="pill abs">${a.name}${a.apology?' ✓':''}</span>`).join('')}</div></div>`;
+  h+='</div>';
+  if(m.iMA&&d.mattersArising?.length) h+=`<div class="doc-sec"><div class="sec-ttl">Matters Arising — Previous Actions</div><table class="a-tbl"><thead><tr><th>Ref</th><th>Action</th><th>Owner</th><th>Due</th><th>Status</th></tr></thead><tbody>${d.mattersArising.map(a=>`<tr><td><span class="ref">${a.ref||''}</span></td><td>${a.action||''}</td><td><span class="own">${a.owner||''}</span></td><td style="font-size:11px;white-space:nowrap">${a.due||''}</td><td><span style="color:${sc(a.status)};font-weight:700;font-size:10px">${a.status||'Open'}</span></td></tr>`).join('')}</tbody></table></div>`;
+  m.agenda.forEach((sec,idx)=>{
+    const rows=d.sections?.[sec]||[];
+    h+=`<div class="doc-sec"><div class="sec-ttl">${idx+(m.iMA?2:1)}. ${sec}</div>`;
+    if(rows.length) h+=`<table class="a-tbl"><thead><tr><th>Ref</th><th>Discussion / Action</th><th>Action By</th><th>Due Date</th><th>Status</th></tr></thead><tbody>${rows.map(a=>`<tr><td><span class="ref">${a.ref||''}</span></td><td>${a.action||''}</td><td><span class="own">${a.owner||''}</span></td><td style="font-size:11px;white-space:nowrap">${a.due||''}</td><td><span style="color:${sc(a.status)};font-weight:700;font-size:10px">${a.status||'Open'}</span></td></tr>`).join('')}</tbody></table>`;
+    else h+='<div style="font-size:12px;color:#6B6B6B;padding:5px 0">No actions recorded for this section.</div>';
+    h+='</div>';
   });
-
-  // Risk register
-  if (m.iR) {
-    h += `<div class="doc-sec"><div class="sec-ttl">Risk Register</div>
-      <div class="risk-leg">
-        <span class="rl"><span class="rl-sq" style="background:#D3D3D3"></span>1–5 Low</span>
-        <span class="rl"><span class="rl-sq" style="background:#555"></span>6–10 Medium</span>
-        <span class="rl"><span class="rl-sq" style="background:#000"></span>11–25 High</span>
-        <span style="margin-left:4px">· Rating = Likelihood × Impact</span>
-      </div>`;
-    if (d.risks?.length) {
-      h += `<table class="r-tbl"><thead><tr><th style="width:56px">ID</th><th>Risk Description</th><th style="width:30px;text-align:center">L</th><th style="width:30px;text-align:center">I</th><th style="width:88px">Rating</th><th style="width:110px">Owner</th><th>Mitigation</th></tr></thead><tbody>
-        ${d.risks.map(r=>`<tr><td><span class="ref">${r.id||''}</span></td><td>${r.description||''}</td><td style="text-align:center;font-weight:600">${r.likelihood||''}</td><td style="text-align:center;font-weight:600">${r.impact||''}</td><td><span class="r-badge ${rCl(r)}">${r.rating||''} — ${r.ratingLabel||''}</span></td><td><span class="own">${r.owner||''}</span></td><td style="font-size:11px">${r.mitigation||''}</td></tr>`).join('')}
-      </tbody></table>`;
-    } else {
-      h += '<div style="font-size:12px;color:#6B6B6B">No risks identified from transcript.</div>';
-    }
-    h += '</div>';
+  if(m.iR){
+    h+=`<div class="doc-sec"><div class="sec-ttl">Risk Register</div><div class="risk-leg"><span class="rl"><span class="rl-sq" style="background:#D3D3D3"></span>1–5 Low</span><span class="rl"><span class="rl-sq" style="background:#555"></span>6–10 Medium</span><span class="rl"><span class="rl-sq" style="background:#000"></span>11–25 High</span><span style="margin-left:4px">· Rating = Likelihood × Impact</span></div>`;
+    if(d.risks?.length) h+=`<table class="r-tbl"><thead><tr><th style="width:56px">ID</th><th>Risk Description</th><th style="width:30px;text-align:center">L</th><th style="width:30px;text-align:center">I</th><th style="width:88px">Rating</th><th style="width:110px">Owner</th><th>Mitigation</th></tr></thead><tbody>${d.risks.map(r=>`<tr><td><span class="ref">${r.id||''}</span></td><td>${r.description||''}</td><td style="text-align:center;font-weight:600">${r.likelihood||''}</td><td style="text-align:center;font-weight:600">${r.impact||''}</td><td><span class="r-badge ${rCl(r)}">${r.rating||''} — ${r.ratingLabel||''}</span></td><td><span class="own">${r.owner||''}</span></td><td style="font-size:11px">${r.mitigation||''}</td></tr>`).join('')}</tbody></table>`;
+    else h+='<div style="font-size:12px;color:#6B6B6B">No risks identified from transcript.</div>';
+    h+='</div>';
   }
-
-  // AOB
-  h += `<div class="doc-sec"><div class="sec-ttl">Any Other Business</div>
-    <div class="aob" style="color:${d.aob?'#1A1A1A':'#6B6B6B'}">${d.aob||'None raised.'}</div></div>`;
-
-  // Next meeting
-  const nm = d.nextMeeting||{};
-  h += `<div class="doc-sec"><div class="sec-ttl">Next Meeting</div>
-    <div class="next-mtg"><strong>${nm.date||'TBC'}</strong> at <strong>${nm.time||'TBC'}</strong>${nm.location?' &mdash; '+nm.location:''}</div></div>`;
-
-  // Signature
-  h += `<div class="sig-grid">
-    ${[['Prepared By',m.prepBy||'—'],['Date Issued',today]].map(([k,v])=>`<div class="sig-box"><div class="sig-lbl">${k}</div><div class="sig-val">${v}</div></div>`).join('')}
-  </div>`;
-
-  h += `</div>
-  <div class="doc-foot">
-    <span>Minutes are deemed accepted if no written comments received within <strong>3 working days</strong> of issue.</span>
-    <span class="brand">EDGE Architecture &amp; Design · Dubai · Confidential</span>
-  </div></div>`;
-
-  document.getElementById('outArea').innerHTML = h;
+  h+=`<div class="doc-sec"><div class="sec-ttl">Any Other Business</div><div class="aob" style="color:${d.aob?'#1A1A1A':'#6B6B6B'}">${d.aob||'None raised.'}</div></div>`;
+  const nm=d.nextMeeting||{};
+  h+=`<div class="doc-sec"><div class="sec-ttl">Next Meeting</div><div class="next-mtg"><strong>${nm.date||'TBC'}</strong> at <strong>${nm.time||'TBC'}</strong>${nm.location?' &mdash; '+nm.location:''}</div></div>`;
+  h+=`<div class="sig-grid">${[['Prepared By',m.prepBy||'—'],['Date Issued',today]].map(([k,v])=>`<div class="sig-box"><div class="sig-lbl">${k}</div><div class="sig-val">${v}</div></div>`).join('')}</div>`;
+  h+=`</div><div class="doc-foot"><span>Minutes deemed accepted if no written comments within <strong>3 working days</strong> of issue.</span><span class="brand">EDGE Architecture &amp; Design · Dubai · Confidential</span></div></div>`;
+  document.getElementById('outArea').innerHTML=h;
 }
 
-function setStat(type, pill, info) {
-  const p = document.getElementById('sPill');
-  p.textContent = pill;
-  p.className = 's-pill ' + (type==='done'?'sp-done':type==='work'?'sp-work':type==='err'?'sp-err':'sp-idle');
-  document.getElementById('sInfo').textContent = info;
-}
-function showErr(m) { const e=document.getElementById('errBanner'); e.textContent=m; e.style.display='block'; }
-function hideErr()  { document.getElementById('errBanner').style.display='none'; }
-function copyDoc()  {
-  const doc = document.querySelector('.mom-doc');
-  if (doc) navigator.clipboard.writeText(doc.innerText).then(()=>{
-    const b = document.querySelectorAll('.tb-btn')[0];
-    const orig = b.textContent;
-    b.textContent = '✓ Copied!';
-    setTimeout(()=>b.textContent=orig, 2000);
-  });
-}
+function setStat(t,p,i){const el=document.getElementById('sPill');el.textContent=p;el.className='s-pill '+(t==='done'?'sp-done':t==='work'?'sp-work':t==='err'?'sp-err':'sp-idle');document.getElementById('sInfo').textContent=i;}
+function showErr(m){const e=document.getElementById('errBanner');e.textContent=m;e.style.display='block';}
+function hideErr(){document.getElementById('errBanner').style.display='none';}
+function copyDoc(){const doc=document.querySelector('.mom-doc');if(doc)navigator.clipboard.writeText(doc.innerText).then(()=>{const b=document.querySelectorAll('.tb-btn')[0];const o=b.textContent;b.textContent='✓ Copied!';setTimeout(()=>b.textContent=o,2000);});}
 </script>
 </body>
 </html>
