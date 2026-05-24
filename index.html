@@ -220,8 +220,8 @@ textarea { height:138px; resize:vertical; line-height:1.5; font-size:12px; }
       </div>
     </div>
 
-    <!-- API key section — hidden automatically when build injects the key -->
-    <div class="sb-sec" id="apiSec">
+    <!-- Shown only if server key not configured -->
+    <div class="sb-sec" id="apiSec" style="display:none;">
       <div class="sb-hdr">
         <div class="sb-step" style="background:var(--yellow);color:var(--black);">5</div>
         <span class="sb-title">API Key</span>
@@ -260,14 +260,13 @@ textarea { height:138px; resize:vertical; line-height:1.5; font-size:12px; }
 </div>
 
 <script>
-// ── Key injected at build time by Netlify (see netlify.toml + build.sh)
-// If placeholder was replaced, INJECTED_KEY will be a real key.
-// If not (local/GitHub Pages), falls back to manual input.
-const INJECTED_KEY = '##ANTHROPIC_KEY##';
-const BUILD_KEY = (INJECTED_KEY.startsWith('##')) ? '' : INJECTED_KEY;
-if (BUILD_KEY) document.getElementById('apiSec').style.display = 'none';
-
 document.getElementById('mDate').valueAsDate = new Date();
+
+// Detect if we're on Netlify (proxy available) or running locally
+const USE_PROXY = !window.location.protocol.startsWith('file');
+
+// If running locally without proxy, show the API key field
+if (!USE_PROXY) document.getElementById('apiSec').style.display = 'block';
 
 document.querySelectorAll('.tog-sw').forEach(t => {
   initTog(t);
@@ -288,15 +287,42 @@ document.getElementById('transcript').addEventListener('input', function() {
   el.style.color = n>60000 ? '#B07000' : '#6B6B6B';
 });
 
-const getKey    = () => BUILD_KEY || document.getElementById('apiKey').value.trim();
 const getAgenda = () => [...document.querySelectorAll('.chip.on')].map(c=>c.dataset.v);
 const togOn     = id => document.getElementById(id).dataset.on==='1';
 const fmt = d => { if(!d) return '—'; try { return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); } catch { return d; } };
 const prepTx = (t,max=55000) => t.length<=max ? {text:t,trimmed:false} : {text:t.slice(0,34000)+'\n\n[...CONDENSED...]\n\n'+t.slice(-18000),trimmed:true};
 
+async function callClaude(payload) {
+  if (USE_PROXY) {
+    // On Netlify — call our serverless proxy function (no CORS issues, key stays server-side)
+    const res = await fetch('/.netlify/functions/anthropic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(()=>({}));
+      throw new Error(e.error?.message || `Server error ${res.status}`);
+    }
+    return res.json();
+  } else {
+    // Local fallback — call Anthropic directly with manual key
+    const key = document.getElementById('apiKey').value.trim();
+    if (!key) throw new Error('Please enter your Anthropic API key in Step 5.');
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-request-allowed':'true' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(()=>({}));
+      throw new Error(e.error?.message || `HTTP ${res.status}`);
+    }
+    return res.json();
+  }
+}
+
 async function generate() {
-  const key = getKey();
-  if (!key) { showErr('Please enter your Anthropic API key in Step 5.'); return; }
   const raw = document.getElementById('transcript').value.trim();
   if (!raw) { showErr('Please paste your meeting transcript first.'); return; }
   hideErr();
@@ -322,16 +348,19 @@ async function generate() {
   const sys=`You are a professional meeting minutes writer for EDGE, a leading architecture and design consultancy in Dubai. Return ONLY valid compact JSON — no markdown, no backticks, no trailing commas. Schema: ${schema}. Rules: sections ${agenda.join(', ')}, max 10 actions each under 25 words. ${iR?'Up to 10 risks, L×I 1-5, 1-5=LOW 6-10=MED 11-25=HIGH.':'risks:[].'}  ${iMA?'Extract previous actions, max 6.':'mattersArising:[].'}  Tone: ${iF?'formal third-person passive LDC standard':'clear concise'}. Status Open unless confirmed closed. Due TBC if unknown. Max 5 keyDecisions. No special chars breaking JSON.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-request-allowed':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:sys,messages:[{role:'user',content:`Project: ${pName} (${pNo}) | ${mType} — ${mNo} | Date: ${mDate}\n\nTRANSCRIPT:\n${tx}`}]})
+    const data = await callClaude({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:8000,
+      system:sys,
+      messages:[{role:'user',content:`Project: ${pName} (${pNo}) | ${mType} — ${mNo} | Date: ${mDate}\n\nTRANSCRIPT:\n${tx}`}]
     });
-    if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.error?.message||`HTTP ${res.status}`); }
-    const data=await res.json();
+
     const raw2=(data.content||[]).map(i=>i.text||'').join('');
     const clean=raw2.replace(/```json|```/g,'').trim();
-    let parsed; try { parsed=JSON.parse(clean); } catch { const lb=clean.lastIndexOf('}'); if(lb>100){try{parsed=JSON.parse(clean.slice(0,lb+1));}catch{throw new Error('Response cut off. Try Read.ai Summary tab instead of full transcript.');}}else throw new Error('Could not parse response. Try Read.ai Summary instead.'); }
+    let parsed;
+    try { parsed=JSON.parse(clean); }
+    catch { const lb=clean.lastIndexOf('}'); if(lb>100){try{parsed=JSON.parse(clean.slice(0,lb+1));}catch{throw new Error('Response cut off. Try Read.ai Summary tab instead of full transcript.');}}else throw new Error('Could not parse response. Try Read.ai Summary instead.'); }
+
     renderDoc(parsed,{pName,pNo,mNo,mDate,mTime,mLoc,mType,prepBy,agenda,iR,iMA,trimmed});
     setStat('done','Complete','Minutes generated — print or save as PDF');
     document.getElementById('tbActs').style.display='';
