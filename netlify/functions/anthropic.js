@@ -16,6 +16,8 @@ exports.handler = async function(event) {
   try {
     const body = JSON.parse(event.body);
     body.model = 'claude-sonnet-4-5';
+    // Keep max_tokens low to ensure response fits within timeout
+    body.max_tokens = 4000;
 
     const result = await new Promise((resolve, reject) => {
       const postData = JSON.stringify(body);
@@ -28,7 +30,8 @@ exports.handler = async function(event) {
           'Content-Length': Buffer.byteLength(postData),
           'x-api-key': apiKey,
           'anthropic-version': '2023-06-01'
-        }
+        },
+        timeout: 25000
       };
 
       const req = https.request(options, (res) => {
@@ -37,6 +40,10 @@ exports.handler = async function(event) {
         res.on('end', () => resolve({ status: res.statusCode, body: data }));
       });
 
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('Request timed out — please use the Read.ai Summary tab instead of the full transcript for faster results.'));
+      });
       req.on('error', reject);
       req.write(postData);
       req.end();
