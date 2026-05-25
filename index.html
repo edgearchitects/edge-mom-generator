@@ -32,8 +32,10 @@ body { font-family:"Helvetica Neue",Helvetica,Arial,sans-serif; background:var(-
 input[type=text],input[type=date],input[type=time],input[type=password],select,textarea { width:100%; border:1px solid var(--grey); border-radius:var(--r); padding:7px 9px; font-size:12px; font-family:inherit; color:var(--ink); background:#fff; transition:border-color .15s; appearance:auto; }
 input:focus,select:focus,textarea:focus { outline:none; border-color:var(--black); box-shadow:0 0 0 2px rgba(0,0,0,.06); }
 .g2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-textarea { height:138px; resize:vertical; line-height:1.5; font-size:12px; }
+textarea { height:120px; resize:vertical; line-height:1.5; font-size:12px; }
 .char-info { font-size:9px; color:var(--muted); text-align:right; margin-top:3px; }
+.tip-box { background:var(--faint); border-left:3px solid var(--yellow); padding:7px 10px; font-size:10px; color:var(--muted); border-radius:0 var(--r) var(--r) 0; margin-top:6px; line-height:1.5; }
+.tip-box strong { color:var(--ink); }
 .chips { display:flex; flex-wrap:wrap; gap:5px; }
 .chip { padding:4px 10px; border-radius:2px; border:1px solid var(--grey); font-size:11px; font-weight:600; cursor:pointer; background:#fff; color:var(--muted); user-select:none; transition:all .12s; }
 .chip.on { background:var(--black); border-color:var(--black); color:var(--white); }
@@ -159,6 +161,7 @@ textarea { height:138px; resize:vertical; line-height:1.5; font-size:12px; }
 <div class="app-body">
   <aside class="sidebar">
 
+    <!-- 1. Meeting Details -->
     <div class="sb-sec">
       <div class="sb-hdr"><div class="sb-step">1</div><span class="sb-title">Meeting Details</span></div>
       <span class="lbl">Project Name</span>
@@ -184,14 +187,28 @@ textarea { height:138px; resize:vertical; line-height:1.5; font-size:12px; }
       <input type="text" id="prepBy" placeholder="Your name">
     </div>
 
+    <!-- 2. Next Meeting -->
     <div class="sb-sec">
-      <div class="sb-hdr"><div class="sb-step">2</div><span class="sb-title">Read.ai Transcript / Summary</span></div>
-      <textarea id="transcript" placeholder="Paste your Read.ai transcript, summary, or meeting notes here…"></textarea>
-      <div class="char-info" id="charInfo">0 characters</div>
+      <div class="sb-hdr"><div class="sb-step">2</div><span class="sb-title">Next Meeting</span></div>
+      <div class="g2">
+        <div><span class="lbl">Date</span><input type="date" id="nmDate"></div>
+        <div><span class="lbl">Time</span><input type="time" id="nmTime"></div>
+      </div>
+      <span class="lbl">Location / Platform</span>
+      <input type="text" id="nmLoc" placeholder="TBC">
     </div>
 
+    <!-- 3. Transcript -->
     <div class="sb-sec">
-      <div class="sb-hdr"><div class="sb-step">3</div><span class="sb-title">Agenda Sections</span></div>
+      <div class="sb-hdr"><div class="sb-step">3</div><span class="sb-title">Read.ai Transcript / Summary</span></div>
+      <textarea id="transcript" placeholder="Paste your Read.ai transcript, summary, or meeting notes here…"></textarea>
+      <div class="char-info" id="charInfo">0 characters</div>
+      <div class="tip-box"><strong>Tip:</strong> Use the Read.ai <strong>Summary</strong> tab for best results — shorter, faster, and avoids timeouts on long meetings.</div>
+    </div>
+
+    <!-- 4. Agenda -->
+    <div class="sb-sec">
+      <div class="sb-hdr"><div class="sb-step">4</div><span class="sb-title">Agenda Sections</span></div>
       <div class="chips">
         <div class="chip on" data-v="Design">Design</div>
         <div class="chip on" data-v="Technical">Technical</div>
@@ -204,8 +221,9 @@ textarea { height:138px; resize:vertical; line-height:1.5; font-size:12px; }
       </div>
     </div>
 
+    <!-- 5. Options -->
     <div class="sb-sec">
-      <div class="sb-hdr"><div class="sb-step">4</div><span class="sb-title">Options</span></div>
+      <div class="sb-hdr"><div class="sb-step">5</div><span class="sb-title">Options</span></div>
       <div class="tog-row">
         <div><div class="tl">Include Risk Register</div><div class="ts">Extract &amp; rate risks from transcript</div></div>
         <div class="tog-sw" id="tRisk" data-on="1"></div>
@@ -220,22 +238,22 @@ textarea { height:138px; resize:vertical; line-height:1.5; font-size:12px; }
       </div>
     </div>
 
-    <!-- Shown only if server key not configured -->
+    <!-- API Key — shown only when running locally -->
     <div class="sb-sec" id="apiSec" style="display:none;">
       <div class="sb-hdr">
-        <div class="sb-step" style="background:var(--yellow);color:var(--black);">5</div>
+        <div class="sb-step" style="background:var(--yellow);color:var(--black);">6</div>
         <span class="sb-title">API Key</span>
       </div>
       <div class="api-notice">
-        <div class="an-title">Required — one time per session</div>
-        <div class="an-body">Enter your Anthropic API key. Get one at <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a>. Never stored.</div>
+        <div class="an-title">Required — local use only</div>
+        <div class="an-body">On Netlify the key is handled automatically. For local use enter your key from <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a>.</div>
       </div>
       <input type="password" id="apiKey" placeholder="sk-ant-api03-…" style="font-family:monospace;font-size:11px;letter-spacing:.5px;">
     </div>
 
     <div id="errBanner" style="display:none;margin:0 1rem;padding:8px 10px;background:#FFEBEE;border-radius:4px;font-size:11px;color:#C0392B;line-height:1.5;"></div>
-
     <button class="btn-gen" id="genBtn" onclick="generate()">Generate Minutes</button>
+
   </aside>
 
   <div class="panel-right">
@@ -262,10 +280,7 @@ textarea { height:138px; resize:vertical; line-height:1.5; font-size:12px; }
 <script>
 document.getElementById('mDate').valueAsDate = new Date();
 
-// Detect if we're on Netlify (proxy available) or running locally
 const USE_PROXY = !window.location.protocol.startsWith('file');
-
-// If running locally without proxy, show the API key field
 if (!USE_PROXY) document.getElementById('apiSec').style.display = 'block';
 
 document.querySelectorAll('.tog-sw').forEach(t => {
@@ -283,18 +298,27 @@ document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', ()=>
 document.getElementById('transcript').addEventListener('input', function() {
   const n = this.value.length;
   const el = document.getElementById('charInfo');
-  el.textContent = n.toLocaleString()+' characters'+(n>60000?' — will be condensed':'');
-  el.style.color = n>60000 ? '#B07000' : '#6B6B6B';
+  el.textContent = n.toLocaleString()+' characters'+(n>8000?' — will be condensed for speed':'');
+  el.style.color = n>8000 ? '#B07000' : '#6B6B6B';
 });
 
 const getAgenda = () => [...document.querySelectorAll('.chip.on')].map(c=>c.dataset.v);
 const togOn     = id => document.getElementById(id).dataset.on==='1';
-const fmt = d => { if(!d) return '—'; try { return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); } catch { return d; } };
-const prepTx = (t,max=55000) => t.length<=max ? {text:t,trimmed:false} : {text:t.slice(0,34000)+'\n\n[...CONDENSED...]\n\n'+t.slice(-18000),trimmed:true};
+const fmt = d => { if(!d) return 'TBC'; try { return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); } catch { return d; } };
+const fmtTime = t => { if(!t) return 'TBC'; try { const [h,m]=t.split(':'); const d=new Date(); d.setHours(h,m); return d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); } catch { return t; } };
+
+// Aggressive trim — keep only 20k chars to stay well within timeout
+const prepTx = (t, max=20000) => {
+  if (t.length <= max) return { text: t, trimmed: false };
+  // Take first 12k (context, attendees, early actions) + last 6k (decisions, AOB, next meeting)
+  return {
+    text: t.slice(0, 12000) + '\n\n[...MIDDLE SECTION REMOVED FOR PROCESSING...]\n\n' + t.slice(-6000),
+    trimmed: true
+  };
+};
 
 async function callClaude(payload) {
   if (USE_PROXY) {
-    // On Netlify — call our serverless proxy function (no CORS issues, key stays server-side)
     const res = await fetch('/.netlify/functions/anthropic', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -302,22 +326,18 @@ async function callClaude(payload) {
     });
     if (!res.ok) {
       const e = await res.json().catch(()=>({}));
-      throw new Error(e.error?.message || `Server error ${res.status}`);
+      throw new Error(e.error?.message || `Server error ${res.status} — check Netlify function logs`);
     }
     return res.json();
   } else {
-    // Local fallback — call Anthropic directly with manual key
     const key = document.getElementById('apiKey').value.trim();
-    if (!key) throw new Error('Please enter your Anthropic API key in Step 5.');
+    if (!key) throw new Error('Please enter your Anthropic API key.');
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-request-allowed':'true' },
       body: JSON.stringify(payload)
     });
-    if (!res.ok) {
-      const e = await res.json().catch(()=>({}));
-      throw new Error(e.error?.message || `HTTP ${res.status}`);
-    }
+    if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.error?.message||`HTTP ${res.status}`); }
     return res.json();
   }
 }
@@ -327,46 +347,65 @@ async function generate() {
   if (!raw) { showErr('Please paste your meeting transcript first.'); return; }
   hideErr();
 
-  const {text:tx,trimmed} = prepTx(raw);
+  const {text:tx, trimmed} = prepTx(raw);
   const agenda=getAgenda(), iR=togOn('tRisk'), iMA=togOn('tMA'), iF=togOn('tTone');
-  const pName=document.getElementById('pName').value||'Project TBC';
-  const pNo=document.getElementById('pNo').value||'—';
-  const mNo=document.getElementById('mNo').value||'—';
-  const mDate=document.getElementById('mDate').value;
-  const mTime=document.getElementById('mTime').value||'—';
-  const mLoc=document.getElementById('mLoc').value||'—';
-  const mType=document.getElementById('mType').value;
-  const prepBy=document.getElementById('prepBy').value||'—';
+  const pName  = document.getElementById('pName').value  || 'Project TBC';
+  const pNo    = document.getElementById('pNo').value    || '—';
+  const mNo    = document.getElementById('mNo').value    || '—';
+  const mDate  = document.getElementById('mDate').value;
+  const mTime  = document.getElementById('mTime').value  || '';
+  const mLoc   = document.getElementById('mLoc').value   || '—';
+  const mType  = document.getElementById('mType').value;
+  const prepBy = document.getElementById('prepBy').value || '—';
+  // Next meeting — user-entered values take priority, AI extracts as fallback
+  const nmDate = document.getElementById('nmDate').value;
+  const nmTime = document.getElementById('nmTime').value;
+  const nmLoc  = document.getElementById('nmLoc').value;
 
-  setStat('work','Generating',trimmed?'Processing condensed transcript…':'AI is processing your transcript…');
+  setStat('work','Generating', trimmed ? 'Processing condensed transcript…' : 'AI is processing your transcript…');
   document.getElementById('outArea').innerHTML='<div class="loading"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>Extracting minutes from transcript…</div>';
   document.getElementById('genBtn').disabled=true;
   document.getElementById('genBtn').innerHTML='<div class="spinner"></div>&nbsp;Generating…';
   document.getElementById('tbActs').style.display='none';
 
   const schema=`{"attendees":[{"name":"str","role":"str","initials":"str"}],"absent":[{"name":"str","apology":true}],"sections":{${agenda.map(a=>`"${a}":[{"ref":"${a[0].toUpperCase()}001","action":"str","owner":"str","due":"DD-MMM-YY or TBC","status":"Open"}]`).join(',')}},"mattersArising":[{"ref":"MA001","action":"str","owner":"str","due":"str","status":"Open"}],"risks":[{"id":"R001","description":"str","likelihood":3,"impact":4,"rating":12,"ratingLabel":"HIGH","owner":"str","mitigation":"str"}],"aob":"str","nextMeeting":{"date":"str","time":"str","location":"str"},"keyDecisions":["str"]}`;
-  const sys=`You are a professional meeting minutes writer for EDGE, a leading architecture and design consultancy in Dubai. Return ONLY valid compact JSON — no markdown, no backticks, no trailing commas. Schema: ${schema}. Rules: sections ${agenda.join(', ')}, max 10 actions each under 25 words. ${iR?'Up to 10 risks, L×I 1-5, 1-5=LOW 6-10=MED 11-25=HIGH.':'risks:[].'}  ${iMA?'Extract previous actions, max 6.':'mattersArising:[].'}  Tone: ${iF?'formal third-person passive LDC standard':'clear concise'}. Status Open unless confirmed closed. Due TBC if unknown. Max 5 keyDecisions. No special chars breaking JSON.`;
+
+  const sys=`You are a professional meeting minutes writer for EDGE, a leading design consultancy in Dubai. Return ONLY valid compact JSON matching this schema exactly: ${schema}
+Rules: extract sections ${agenda.join(', ')}, max 6 actions each, max 20 words per action. ${iR?'Max 6 risks, L×I 1-5, LOW/MED/HIGH.':'risks:[].'}  ${iMA?'Max 4 previous actions.':'mattersArising:[].'}  ${iF?'Formal third-person passive tone.':'Clear concise tone.'}  Status Open unless confirmed closed. Due TBC if unknown. Max 4 keyDecisions. No characters that break JSON.`;
 
   try {
     const data = await callClaude({
-      model:'claude-sonnet-4-20250514',
-      max_tokens:8000,
-      system:sys,
-      messages:[{role:'user',content:`Project: ${pName} (${pNo}) | ${mType} — ${mNo} | Date: ${mDate}\n\nTRANSCRIPT:\n${tx}`}]
+      model: 'claude-sonnet-4-5',
+      max_tokens: 4000,
+      system: sys,
+      messages: [{ role:'user', content:`Project: ${pName} (${pNo}) | ${mType} — ${mNo} | Date: ${fmt(mDate)}\n\nTRANSCRIPT:\n${tx}` }]
     });
 
-    const raw2=(data.content||[]).map(i=>i.text||'').join('');
-    const clean=raw2.replace(/```json|```/g,'').trim();
+    const raw2 = (data.content||[]).map(i=>i.text||'').join('');
+    const clean = raw2.replace(/```json|```/g,'').trim();
     let parsed;
-    try { parsed=JSON.parse(clean); }
-    catch { const lb=clean.lastIndexOf('}'); if(lb>100){try{parsed=JSON.parse(clean.slice(0,lb+1));}catch{throw new Error('Response cut off. Try Read.ai Summary tab instead of full transcript.');}}else throw new Error('Could not parse response. Try Read.ai Summary instead.'); }
+    try { parsed = JSON.parse(clean); }
+    catch {
+      const lb = clean.lastIndexOf('}');
+      if (lb>100) { try { parsed=JSON.parse(clean.slice(0,lb+1)); } catch { throw new Error('Response was cut off. Please use the Read.ai Summary tab instead of the full transcript.'); } }
+      else throw new Error('Could not parse response. Please use the Read.ai Summary tab instead of the full transcript.');
+    }
 
-    renderDoc(parsed,{pName,pNo,mNo,mDate,mTime,mLoc,mType,prepBy,agenda,iR,iMA,trimmed});
+    // Override next meeting with user-entered values if provided
+    if (nmDate || nmTime || nmLoc) {
+      parsed.nextMeeting = {
+        date: nmDate ? fmt(nmDate) : (parsed.nextMeeting?.date || 'TBC'),
+        time: nmTime ? fmtTime(nmTime) : (parsed.nextMeeting?.time || 'TBC'),
+        location: nmLoc || parsed.nextMeeting?.location || 'TBC'
+      };
+    }
+
+    renderDoc(parsed, {pName,pNo,mNo,mDate,mTime,mLoc,mType,prepBy,agenda,iR,iMA,trimmed});
     setStat('done','Complete','Minutes generated — print or save as PDF');
     document.getElementById('tbActs').style.display='';
   } catch(e) {
     showErr(e.message);
-    document.getElementById('outArea').innerHTML=`<div class="err-wrap"><div class="err-title">Generation failed</div><div class="err-msg">${e.message}</div><div class="err-tip"><strong>Tip:</strong> For long transcripts use the <strong>Read.ai Summary</strong> tab — shorter, faster, cleaner output.</div></div>`;
+    document.getElementById('outArea').innerHTML=`<div class="err-wrap"><div class="err-title">Generation failed</div><div class="err-msg">${e.message}</div><div class="err-tip"><strong>Tip:</strong> Use the <strong>Read.ai Summary</strong> tab rather than the full transcript — it's shorter, faster and produces cleaner output.</div></div>`;
     setStat('err','Error','See error message');
   }
   document.getElementById('genBtn').disabled=false;
@@ -380,7 +419,7 @@ function renderDoc(d,m) {
   let h='<div class="mom-doc">';
   if(m.trimmed) h+='<div class="trim-bar">⚠ Transcript condensed for processing. All key actions and decisions captured.</div>';
   h+=`<div class="doc-head"><div><div class="dh-label">Minutes of Meeting</div><div class="dh-project">${m.pName}</div><div class="dh-type">${m.mType}</div></div><div class="dh-meta">${[['Project',m.pNo],['Meeting',m.mNo],['Date',fmt(m.mDate)],['Issued',today],['Rev','0']].map(([k,v])=>`<div>${k}&ensp;<span>${v}</span></div>`).join('')}</div></div><div class="doc-rule"></div><div class="doc-body">`;
-  h+=`<div class="doc-sec"><div class="sec-ttl">Meeting Information</div><div class="info-grid">${[['Time',m.mTime],['Location / Platform',m.mLoc],['Prepared By',m.prepBy],['Meeting Type',m.mType]].map(([k,v])=>`<div class="ic"><div class="ik">${k}</div><div class="iv">${v}</div></div>`).join('')}</div></div>`;
+  h+=`<div class="doc-sec"><div class="sec-ttl">Meeting Information</div><div class="info-grid">${[['Time',fmtTime(m.mTime)],['Location / Platform',m.mLoc],['Prepared By',m.prepBy],['Meeting Type',m.mType]].map(([k,v])=>`<div class="ic"><div class="ik">${k}</div><div class="iv">${v}</div></div>`).join('')}</div></div>`;
   if(d.keyDecisions?.length) h+=`<div class="doc-sec"><div class="sec-ttl">Key Decisions</div>${d.keyDecisions.map((x,i)=>`<div class="dec-item"><span class="dec-n">${i+1}</span><span>${x}</span></div>`).join('')}</div>`;
   h+=`<div class="doc-sec"><div class="sec-ttl">Attendees</div><div class="pills">${d.attendees?.length?d.attendees.map(a=>`<span class="pill">${a.name}${a.initials?' ('+a.initials+')':''}</span>`).join(''):'<span style="font-size:12px;color:#6B6B6B">Not identified in transcript</span>'}</div>`;
   if(d.absent?.length) h+=`<div style="margin-top:8px"><div style="font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#6B6B6B;font-weight:700;margin-bottom:5px">Absent</div><div class="pills">${d.absent.map(a=>`<span class="pill abs">${a.name}${a.apology?' ✓':''}</span>`).join('')}</div></div>`;
@@ -401,7 +440,7 @@ function renderDoc(d,m) {
   }
   h+=`<div class="doc-sec"><div class="sec-ttl">Any Other Business</div><div class="aob" style="color:${d.aob?'#1A1A1A':'#6B6B6B'}">${d.aob||'None raised.'}</div></div>`;
   const nm=d.nextMeeting||{};
-  h+=`<div class="doc-sec"><div class="sec-ttl">Next Meeting</div><div class="next-mtg"><strong>${nm.date||'TBC'}</strong> at <strong>${nm.time||'TBC'}</strong>${nm.location?' &mdash; '+nm.location:''}</div></div>`;
+  h+=`<div class="doc-sec"><div class="sec-ttl">Next Meeting</div><div class="next-mtg"><strong>${nm.date||'TBC'}</strong> at <strong>${nm.time||'TBC'}</strong>${nm.location&&nm.location!=='TBC'?' &mdash; '+nm.location:''}</div></div>`;
   h+=`<div class="sig-grid">${[['Prepared By',m.prepBy||'—'],['Date Issued',today]].map(([k,v])=>`<div class="sig-box"><div class="sig-lbl">${k}</div><div class="sig-val">${v}</div></div>`).join('')}</div>`;
   h+=`</div><div class="doc-foot"><span>Minutes deemed accepted if no written comments within <strong>3 working days</strong> of issue.</span><span class="brand">EDGE Architecture &amp; Design · Dubai · Confidential</span></div></div>`;
   document.getElementById('outArea').innerHTML=h;
